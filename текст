@@ -1,0 +1,51 @@
+#language:
+#- ru
+#tags:
+#- Simplification
+#- Summarization
+#- paraphrase
+#---
+#3Данная модель является дообучнной версией "ai-forever/ruT5-base" (ранее"sberbank-ai/ruT5-base") на задаче упрощения текста (text simplification).
+#Набор данных (https://drive.google.com/file/d/14lCIp0TJ78R8E9miVm5Ac88guEjCkgFR) был собран из материалов конференции "Dialog-21" (https://github.com/dialogue-evaluation/RuSimpleSentEval), корпуса "RuAdapt" (https://github.com/Digital-Pushkin-Lab/RuAdapt), а также уникальных данных, предоставленными институтом ИФиЯК СФУ.
+#Параметры обучения: данные из файла "dia_train", Learning Rate = 3e-5, batch size = 1, optimizer = AdamW.
+#Оценка SARI (среднее на файле "dia_test") = 33,14
+
+#```
+
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
+
+model_name = "DmitriyVasiliev/ruT5-base-simplification"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+device = torch.device('cpu')
+
+input_text = """пока"""
+ml = 2048
+
+
+import re
+def out_gen(input_line):
+  WHITESPACE_HANDLER = lambda k: re.sub('\s+', ' ', re.sub('\n+', ' ', k.strip()))
+  input_ids = tokenizer(
+      [WHITESPACE_HANDLER(input_line)],
+      return_tensors="pt",
+      padding="max_length",
+      truncation=True,
+      max_length=ml
+    )["input_ids"].to(device)
+  output_ids = model.generate(
+      input_ids=input_ids,
+      max_length=ml,
+      no_repeat_ngram_size=2,
+      num_beams=5,
+    )[0].to(device)
+  summary = tokenizer.decode(
+    output_ids,
+    skip_special_tokens=True,
+    clean_up_tokenization_spaces=False
+  )
+  return summary
+
+answer = out_gen(input_text)
+print(answer)
