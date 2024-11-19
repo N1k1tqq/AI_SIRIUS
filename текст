@@ -11,7 +11,7 @@
 #Оценка SARI (среднее на файле "dia_test") = 33,14
 
 #```
-
+import transformers
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
 
@@ -20,9 +20,10 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 device = torch.device('cpu')
 
-input_text = """пока"""
+input_text = input("Введите текст: ")
+print(f"\n Ваш текст: {input_text}")
+ #str(input('Введите ваш запрос \n > '))
 ml = 2048
-
 
 import re
 def out_gen(input_line):
